@@ -1,31 +1,24 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const { cake } = require('./middleware/cake');
+
 // Helper method for generating unique ids
 const uuid = require('./helpers/uuid');
-const api = require('./routes/index.js');
-
 
 const PORT = 3001;
 
 const app = express();
-// Import custom middleware, "cake"
-app.use(cake);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api', api); 
+
 
 app.use(express.static('public'));
 
-app.get('/', (req, res) =>
-    res.sendFile(path.join(__dirname, '/public/assets/index.html'))
-);
-
 // GET request for notes
 app.get('/api/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, '/public/assets/notes.html'));
-    //res.status(200).json(`${req.method} request received to get notes`);
+    //read from file then send data from res.json 
+    res.status(200).json(`${req.method} request received to get notes`);
 
 
     // Log our request to the terminal
@@ -62,7 +55,7 @@ app.post('/api/notes', (req, res) => {
 
                 // Write updated notes back to the file
                 fs.writeFile(
-                    './db.json',
+                    './db/db.json',
                     JSON.stringify(parsedNotes, null, 4),
                     (writeErr) =>
                         writeErr
@@ -84,6 +77,17 @@ app.post('/api/notes', (req, res) => {
     }
 });
 
+app.get('/notes', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/notes.html'));
+
+    // Log our request to the terminal
+    console.info(`${req.method} request received to get notes`);
+});
+
+
+app.get('*', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/index.html'))
+);
 app.listen(PORT, () =>
     console.log(`App listening at http://localhost:${PORT} 🚀`)
 );
