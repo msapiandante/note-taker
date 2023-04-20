@@ -1,28 +1,27 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const uuid = require('uuid'); // require uuid package for generating unique IDs
 
-// Helper method for generating unique ids
-const uuid = require('./helpers/uuid');
-
-const PORT = 3001;
-
+const PORT = process.env.PORT || 3001;
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
 app.use(express.static('public'));
 
 // GET request for notes
 app.get('/api/notes', (req, res) => {
     //read from file then send data from res.json 
-    res.status(200).json(`${req.method} request received to get notes`);
-
-
-    // Log our request to the terminal
-    console.info(`${req.method} request received to get notes`);
+    fs.readFile('./db/db.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+        } else {
+            // Convert string into JSON object and send response
+            const parsedNotes = JSON.parse(data);
+            res.json(parsedNotes);
+        }
+    });
 });
 
 // POST request to add a note
@@ -36,10 +35,10 @@ app.post('/api/notes', (req, res) => {
     // If all the required properties are present
     if (title && text) {
         // Variable for the object we will save
-        const newNotes = {
+        const newNote = {
+            id: uuid.v4(),
             title,
             text,
-            review_id: uuid(),
         };
 
         // Obtain existing notes
@@ -51,7 +50,7 @@ app.post('/api/notes', (req, res) => {
                 const parsedNotes = JSON.parse(data);
 
                 // Add a new note
-                parsedNotes.push(newNotes);
+                parsedNotes.push(newNote);
 
                 // Write updated notes back to the file
                 fs.writeFile(
@@ -67,7 +66,7 @@ app.post('/api/notes', (req, res) => {
 
         const response = {
             status: 'success',
-            body: newNotes,
+            body: newNote,
         };
 
         console.log(response);
@@ -79,15 +78,10 @@ app.post('/api/notes', (req, res) => {
 
 app.get('/notes', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/notes.html'));
-
-    // Log our request to the terminal
-    console.info(`${req.method} request received to get notes`);
 });
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/index.html'));
+});
 
-app.get('*', (req, res) =>
-    res.sendFile(path.join(__dirname, '/public/index.html'))
-);
-app.listen(PORT, () =>
-    console.log(`App listening at http://localhost:${PORT} 🚀`)
-);
+app.listen(PORT, () => console.log(`App listening at http://localhost:${PORT} 🚀`));
