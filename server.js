@@ -4,6 +4,8 @@ const fs = require('fs');
 const { cake } = require('./middleware/cake');
 // Helper method for generating unique ids
 const uuid = require('./helpers/uuid');
+const api = require('./routes/index.js');
+
 
 const PORT = 3001;
 
@@ -12,18 +14,18 @@ const app = express();
 app.use(cake);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use('/api', api); needs to be defined. 
+app.use('/api', api); 
 
 app.use(express.static('public'));
 
-app.get('*', (req, res) =>
-    res.sendFile(path.join(__dirname, 'index.html'))
+app.get('/', (req, res) =>
+    res.sendFile(path.join(__dirname, '/public/assets/index.html'))
 );
 
 // GET request for notes
 app.get('/api/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, 'notes.html'));
-    res.status(200).json(`${req.method} request received to get notes`);
+    res.sendFile(path.join(__dirname, '/public/assets/notes.html'));
+    //res.status(200).json(`${req.method} request received to get notes`);
 
 
     // Log our request to the terminal
@@ -48,7 +50,7 @@ app.post('/api/notes', (req, res) => {
         };
 
         // Obtain existing notes
-        fs.readFile('./db.json', 'utf8', (err, data) => {
+        fs.readFile('./db/db.json', 'utf8', (err, data) => {
             if (err) {
                 console.error(err);
             } else {
