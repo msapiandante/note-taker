@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const uuid = require('uuid'); // require uuid package for generating unique IDs
+// require uuid package for generating unique IDs
+const uuid = require('uuid'); 
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -23,7 +24,10 @@ app.get('/api/notes', (req, res) => {
         }
     });
 });
-
+//HTML route for notes.html 
+app.get('/notes', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/notes.html'));
+});
 // POST request to add a note
 app.post('/api/notes', (req, res) => {
     // Log that a POST request was received
@@ -53,9 +57,7 @@ app.post('/api/notes', (req, res) => {
                 parsedNotes.push(newNote);
 
                 // Write updated notes back to the file
-                fs.writeFile(
-                    './db/db.json',
-                    JSON.stringify(parsedNotes, null, 4),
+                fs.writeFile('./db/db.json', JSON.stringify(parsedNotes),
                     (writeErr) =>
                         writeErr
                             ? console.error(writeErr)
@@ -76,10 +78,7 @@ app.post('/api/notes', (req, res) => {
     }
 });
 
-app.get('/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, '/public/notes.html'));
-});
-
+//HTML route for index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html'));
 });
